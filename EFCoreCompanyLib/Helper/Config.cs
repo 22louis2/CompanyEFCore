@@ -8,10 +8,14 @@ namespace EFCoreCompanyLib.Helper
 {
     public class Config
     {
+        /// <summary>
+        /// Interface Properties 
+        /// </summary>
         public static IEmployeeRepository IEmp { get; set; }
         public static IDepartmentRepository IDept { get; set; }
-
-        //public static SQLConnection Connect { get; set; }
+        /// <summary>
+        /// Method to get my Interfaces to the UI Form
+        /// </summary>
         public static void PlugSocket()
         {
             // Initializing my Various Methods

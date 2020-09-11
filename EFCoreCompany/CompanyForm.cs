@@ -15,10 +15,19 @@ namespace EFCoreCompany
 {
     public partial class CompanyForm : Form
     {
+        /// <summary>
+        /// Properties Declaration
+        /// </summary>
         int EmpID { get; set; }
         int DeptID { get; set; }
         public IEmployeeRepository ResEmp { get; set; }
         public IDepartmentRepository ResDept { get; set; }
+
+        /// <summary>
+        /// Form Constructor
+        /// </summary>
+        /// <param name="resEmp"></param>
+        /// <param name="resDept"></param>
         public CompanyForm(IEmployeeRepository resEmp, IDepartmentRepository resDept)
         {
             InitializeComponent();
@@ -26,6 +35,11 @@ namespace EFCoreCompany
             this.ResDept = resDept;
         }
 
+        /// <summary>
+        /// On Form Load, Methods to Perform
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void CompanyForm_Load(object sender, EventArgs e)
         {
             var comboDept = ResDept.GetAllDeptToCombo();
@@ -39,84 +53,223 @@ namespace EFCoreCompany
             {
                 comboBox1.Items.Add(item);
             }
+
+            searchComboBox.Items.Add("");
         }
 
+        /// <summary>
+        /// Event to be triggered when trying to Add Department
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAddDept_Click(object sender, EventArgs e)
         {
-            ResDept.AddDept(
+            try
+            {
+                if(textBox10.Text != "")
+                {
+                    ResDept.AddDept(
+                       new Department
+                       {
+                           DepartmentName = textBox10.Text
+                       }
+                    );
+
+                    dataGridView2.DataSource = ResDept.GetAllDept();
+
+                    comboBox1.Items.Clear();
+                    var comboDept = ResDept.GetAllDeptToCombo();
+                    foreach (var item in comboDept)
+                    {
+                        comboBox1.Items.Add(item);
+                    }
+                } else
+                {
+                    MessageBox.Show("Input Field is empty");
+                }
+
+                textBox10.Clear();
+            }
+            catch(Exception)
+            {
+                MessageBox.Show("New Department could not be Added. Check if it already exists");
+            }
+        }
+
+        /// <summary>
+        /// Event to be triggered when Deleting a Department
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnDeleteDept_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ResDept.DeleteDept(DeptID);
+
+                dataGridView1.DataSource = ResEmp.GetAllEmp();
+                dataGridView2.DataSource = ResDept.GetAllDept();
+
+                comboBox1.Items.Clear();
+                var comboDept = ResDept.GetAllDeptToCombo();
+                foreach (var item in comboDept)
+                {
+                    comboBox1.Items.Add(item);
+                }
+
+                textBox10.Clear();
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Department Could not be Deleted");
+            }
+        }
+
+        /// <summary>
+        /// Event to be triggered when Update a Department
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateDept_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ResDept.UpdateDept(
                 new Department
                 {
+                    DepartmentId = DeptID,
                     DepartmentName = textBox10.Text
                 }
             );
 
-            dataGridView2.DataSource = ResDept.GetAllDept();
+                dataGridView2.DataSource = ResDept.GetAllDept();
+                dataGridView1.DataSource = ResEmp.GetAllEmp();
 
-            comboBox1.Items.Clear();
-            var comboDept = ResDept.GetAllDeptToCombo();
-            foreach (var item in comboDept)
-            {
-                comboBox1.Items.Add(item);
+                comboBox1.Items.Clear();
+                var comboDept = ResDept.GetAllDeptToCombo();
+                foreach (var item in comboDept)
+                {
+                    comboBox1.Items.Add(item);
+                }
+
+                textBox10.Clear();
             }
-
-            textBox10.Clear();
+            catch(Exception)
+            {
+                MessageBox.Show("Department could not be Updated");
+            }
         }
 
+        /// <summary>
+        /// Event to be triggered when Add an Employee
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnAddEmp_Click(object sender, EventArgs e)
         {
-            ResEmp.AddEmp(new Employee
-            { 
-                FirstName = textBox1.Text,
-                LastName = textBox2.Text,
-                Email = textBox3.Text,
-                PhoneNumber = textBox4.Text,
-                HireDate = dateTimePicker1.Value,
-                Salary = decimal.Parse(textBox6.Text)
-            },
-            comboBox1.Text);
+            try
+            {
+                decimal.TryParse(textBox6.Text, out decimal d);
 
-            dataGridView1.DataSource = ResEmp.GetAllEmp();
+                if(decimal.TryParse(textBox6.Text, out decimal _))
+                {
+                    ResEmp.AddEmp(new Employee
+                    {
+                        FirstName = textBox1.Text,
+                        LastName = textBox2.Text,
+                        Email = textBox3.Text,
+                        PhoneNumber = textBox4.Text,
+                        HireDate = dateTimePicker1.Value,
+                        Salary = d
+                    },
+                    comboBox1.Text
+                    );
 
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox4.Clear();
-            textBox6.Clear();
+                    dataGridView1.DataSource = ResEmp.GetAllEmp();
+                }
+                else
+                {
+                    MessageBox.Show("Enter Valid Input");
+                }
+                
+                textBox1.Clear();
+                textBox2.Clear();
+                textBox3.Clear();
+                textBox4.Clear();
+                textBox6.Clear();
+            }
+            catch(Exception)
+            {
+                MessageBox.Show("Fill up Relevant Fields. New Employee details could not be Added");
+            }
         }
 
+
+        /// <summary>
+        /// Event to be triggered when Deleting an Employee
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnDeleteEmp_Click(object sender, EventArgs e)
         {
-            ResEmp.DeleteEmp(EmpID);
-            dataGridView1.DataSource = ResEmp.GetAllEmp();
+            try
+            {
+                ResEmp.DeleteEmp(EmpID);
+                dataGridView1.DataSource = ResEmp.GetAllEmp();
 
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox4.Clear();
-            textBox6.Clear();
-
+                textBox1.Clear();
+                textBox2.Clear();
+                textBox3.Clear();
+                textBox4.Clear();
+                textBox6.Clear();
+            }
+            catch(Exception)
+            {
+                MessageBox.Show("Employee details could not be Deleted");
+            }
         }
 
+        /// <summary>
+        /// Event to be triggered when Updating an Employee
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnUpdateEmp_Click(object sender, EventArgs e)
         {
-            ResEmp.UpdateEmp(new Employee
+            try
             {
-                EmployeeId = EmpID,
-                FirstName = textBox1.Text,
-                LastName = textBox2.Text,
-                Email = textBox3.Text,
-                PhoneNumber = textBox4.Text,
-                HireDate = dateTimePicker1.Value,
-                Salary = decimal.Parse(textBox6.Text)
-            }, comboBox1.Text);
+                decimal.TryParse(textBox6.Text, out decimal d);
 
-            dataGridView1.DataSource = ResEmp.GetAllEmp();
+                if(decimal.TryParse(textBox6.Text, out decimal _))
+                {
+                    ResEmp.UpdateEmp(new Employee
+                    {
+                        EmployeeId = EmpID,
+                        FirstName = textBox1.Text,
+                        LastName = textBox2.Text,
+                        Email = textBox3.Text,
+                        PhoneNumber = textBox4.Text,
+                        HireDate = dateTimePicker1.Value,
+                        Salary = d
+                    }, comboBox1.Text);
 
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox4.Clear();
-            textBox6.Clear();
+                    dataGridView1.DataSource = ResEmp.GetAllEmp();
+                }
+                else
+                {
+                    MessageBox.Show("Enter Valid Input");
+                }
+
+                textBox1.Clear();
+                textBox2.Clear();
+                textBox3.Clear();
+                textBox4.Clear();
+                textBox6.Clear();
+            }
+            catch(Exception)
+            {
+                MessageBox.Show("Employee details could not be Updated");
+            }
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -156,6 +309,40 @@ namespace EFCoreCompany
             catch (Exception)
             {
                 MessageBox.Show("Wrong Field Data Inputted or Clicked");
+            }
+        }
+
+        /// <summary>
+        /// Event to be triggered when a value is selected in order to perform it searches
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void searchComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //var test = CUDOperations.getAllEmp();
+            if (searchComboBox.SelectedIndex == 0)
+            {
+                dataGridView1.DataSource = ResEmp.GetAllEmpAndDept();
+            }
+            else if(searchComboBox.SelectedIndex == 1)
+            {
+                dataGridView1.DataSource = ResEmp.GetAllEmpAndDeptGroupedByDept();
+            }
+            else if(searchComboBox.SelectedIndex == 2)
+            {
+                dataGridView1.DataSource = ResEmp.GetEmployeeBySalaryAbove150000();
+            }
+            else if(searchComboBox.SelectedIndex == 3)
+            {
+                dataGridView1.DataSource = ResEmp.GetAllDeptNotAssignedAnEmp();
+            } 
+            else if(searchComboBox.SelectedIndex == 4)
+            {
+                dataGridView1.DataSource = ResEmp.GetAllEmpAndDeptAssignedAndNotAssigned();
+            }
+            else if(searchComboBox.SelectedIndex == 5)
+            {
+                dataGridView1.DataSource = ResEmp.GetAllEmp();
             }
         }
     }
